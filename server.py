@@ -2,10 +2,11 @@ import os
 import requests
 from flask import Flask
 from telegram import Bot
+from telegram.constants import ParseMode
 import asyncio
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
-CHAT_ID = int(os.environ.get('CHAT_ID'))
+CHAT_ID = os.environ.get('CHAT_ID')
 FINNHUB_API_KEY = os.environ.get('FINNHUB_API_KEY')
 
 bot = Bot(token=BOT_TOKEN)
@@ -66,10 +67,12 @@ async def send_update():
         else:
             message += f"{name}: ❌ שגיאה בטעינה\n"
 
-    await bot.send_message(chat_id=CHAT_ID, text=message, parse_mode='Markdown')
+    await bot.send_message(chat_id=CHAT_ID, text=message, parse_mode=ParseMode.MARKDOWN)
 
-# הרצה חד פעמית עם עליית השרת
-asyncio.run(send_update())
+@app.before_first_request
+def before_first_request():
+    loop = asyncio.get_event_loop()
+    loop.create_task(send_update())
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080)
