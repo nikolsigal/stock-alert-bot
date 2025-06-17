@@ -1,11 +1,13 @@
-from flask import Flask
+import os
 import requests
+from flask import Flask
 from telegram import Bot
 
-BOT_TOKEN = '7202858279:AAE2KIOR7jnwlBB60Tucsq1yKxyD1vrIK6k'
-CHAT_ID = 1484897504
-FINNHUB_API_KEY = 'd18jgmpr01qg5218es2gd18jgmpr01qg5218es30'
-bot= Bot(token=BOT_TOKEN)
+BOT_TOKEN = os.environ.get('BOT_TOKEN')
+CHAT_ID = int(os.environ.get('CHAT_ID'))
+FINNHUB_API_KEY = os.environ.get('FINNHUB_API_KEY')
+
+bot = Bot(token=BOT_TOKEN)
 app = Flask(__name__)
 
 @app.route('/')
@@ -48,8 +50,7 @@ def send_update():
         'Ethereum': 'BINANCE:ETHUSDT'
     }
 
-    message = "📊 *עדכון מחירים + המלצות אנליסטים:*
-"
+    message = "📊 *עדכון מחירים + המלצות אנליסטים:*\n"
     for name, symbol in symbols.items():
         price, open_price = get_price_finnhub(symbol)
         if price is not None and open_price is not None:
@@ -65,3 +66,9 @@ def send_update():
             message += f"{name}: ❌ שגיאה בטעינה\n"
 
     bot.send_message(chat_id=CHAT_ID, text=message, parse_mode='Markdown')
+
+send_update()
+
+if __name__ == "__main__":
+    send_update()
+    app.run(host='0.0.0.0', port=8080)
