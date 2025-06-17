@@ -2,6 +2,7 @@ import os
 import requests
 from flask import Flask
 from telegram import Bot
+import asyncio
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 CHAT_ID = int(os.environ.get('CHAT_ID'))
@@ -41,7 +42,7 @@ def get_analyst_recommendation(symbol):
     except:
         return "המלצת אנליסטים: ❌ שגיאה"
 
-def send_update():
+async def send_update():
     symbols = {
         'KTOS': 'KTOS',
         'STNG': 'STNG',
@@ -65,10 +66,10 @@ def send_update():
         else:
             message += f"{name}: ❌ שגיאה בטעינה\n"
 
-    bot.send_message(chat_id=CHAT_ID, text=message, parse_mode='Markdown')
+    await bot.send_message(chat_id=CHAT_ID, text=message, parse_mode='Markdown')
 
-send_update()
+# הרצה חד פעמית עם עליית השרת
+asyncio.run(send_update())
 
 if __name__ == "__main__":
-    send_update()
     app.run(host='0.0.0.0', port=8080)
