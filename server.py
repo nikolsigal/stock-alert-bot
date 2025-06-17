@@ -4,6 +4,7 @@ from flask import Flask
 from telegram import Bot
 from telegram.constants import ParseMode
 import asyncio
+import threading
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 CHAT_ID = os.environ.get('CHAT_ID')
@@ -69,10 +70,14 @@ async def send_update():
 
     await bot.send_message(chat_id=CHAT_ID, text=message, parse_mode=ParseMode.MARKDOWN)
 
-@app.before_first_request
-def before_first_request():
-    loop = asyncio.get_event_loop()
-    loop.create_task(send_update())
+# פונקציה שמריצה את הבוט בת'רד נפרד
+def start_background_loop():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(send_update())
+
+# נפעיל את הבוט ברקע אחרי שהשרת עלה
+threading.Thread(target=start_background_loop).start()
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080)
